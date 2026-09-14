@@ -57,13 +57,20 @@ export default function DashboardPage() {
   const today = new Date();
 
   useEffect(() => {
+    // Stale-While-Revalidate: show cached data instantly if available
+    if (storeUser && storeFriends && storeFriends.length > 0) {
+      setIsLoading(false);
+    }
+
     const fetchLiveDashboard = async () => {
       try {
-        const user = await getMe();
+        // Fetch User and Leaderboard in parallel to prevent waterfall loading
+        const [user, friends] = await Promise.all([
+          getMe(),
+          getLeaderboard()
+        ]);
+        
         setLiveUser(user);
-
-        // User requested all users to appear instead of just friends
-        const friends = await getLeaderboard();
         setLiveFriends(friends);
       } catch (e) {
         console.error("Failed to load dashboard data", e);

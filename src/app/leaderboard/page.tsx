@@ -20,13 +20,19 @@ const item = {
 };
 
 export default function LeaderboardPage() {
-  const { currentUser } = useStore();
+  const { currentUser, friends } = useStore();
   const [filter, setFilter] = useState<"Today" | "Week" | "Month">("Week");
   
-  const [leaderboardUsers, setLeaderboardUsers] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Initialize with cached friends if available to prevent loading flashes
+  const [leaderboardUsers, setLeaderboardUsers] = useState<any[]>(friends || []);
+  const [isLoading, setIsLoading] = useState(friends && friends.length > 0 ? false : true);
 
   useEffect(() => {
+    // SWR: Show cached data immediately, then fetch fresh data in background
+    if (friends && friends.length > 0) {
+      setIsLoading(false);
+    }
+
     const fetchBoard = async () => {
       try {
         const users = await getLeaderboard();
@@ -38,7 +44,7 @@ export default function LeaderboardPage() {
       }
     };
     fetchBoard();
-  }, [currentUser]);
+  }, [currentUser, friends]);
 
   if (!currentUser || isLoading) return null;
 
