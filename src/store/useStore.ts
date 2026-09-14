@@ -52,7 +52,7 @@ type Store = {
   reviewTask: (userId: number, taskId: number) => Promise<void>;
   rejectTask: (userId: number, taskId: number) => Promise<void>;
   completeTask: (taskId: number) => Promise<void>;
-  fetchFriends: () => Promise<void>;
+  fetchLeaderboardAsNetwork: () => Promise<void>;
 };
 
 export const useStore = create<Store>((set, get) => ({
@@ -72,7 +72,7 @@ export const useStore = create<Store>((set, get) => ({
       localStorage.setItem('ll_token', data.access_token);
     }
     set({ currentUser: data.user, token: data.access_token });
-    get().fetchFriends();
+    get().fetchLeaderboardAsNetwork();
   },
 
   logout: () => {
@@ -92,7 +92,7 @@ export const useStore = create<Store>((set, get) => ({
       try {
         const user = await api.getMe();
         set({ currentUser: user, token });
-        get().fetchFriends();
+        get().fetchLeaderboardAsNetwork();
         set({ isInitializing: false });
         return;
       } catch (err) {
@@ -104,7 +104,7 @@ export const useStore = create<Store>((set, get) => ({
       try {
         const user = await api.getMe();
         set({ currentUser: user, token: 'local-dev-token' });
-        get().fetchFriends();
+        get().fetchLeaderboardAsNetwork();
       } catch {
         // Fallback default dev user if backend is offline
         const localDevUser: User = {
@@ -130,7 +130,7 @@ export const useStore = create<Store>((set, get) => ({
     set({ currentUser: null, token: null, isInitializing: false });
   },
 
-  fetchFriends: async () => {
+  fetchLeaderboardAsNetwork: async () => {
     const { currentUser } = get();
     if (!currentUser) return;
     // NOTE: This fetches the full leaderboard (all users) and stores them
@@ -150,14 +150,14 @@ export const useStore = create<Store>((set, get) => ({
     const { currentUser } = get();
     if (!currentUser) return;
     await api.addFriend(currentUser.id, friendEmail);
-    get().fetchFriends();
+    get().fetchLeaderboardAsNetwork();
   },
 
   removeFriend: async (id) => {
     const { currentUser } = get();
     if (!currentUser) return;
     await api.removeFriend(currentUser.id, id);
-    get().fetchFriends();
+    get().fetchLeaderboardAsNetwork();
   },
 
   assignTask: async (userId, title) => {
@@ -169,13 +169,13 @@ export const useStore = create<Store>((set, get) => ({
       const refreshedUser = await api.getMe();
       set({ currentUser: refreshedUser });
     } else {
-      get().fetchFriends();
+      get().fetchLeaderboardAsNetwork();
     }
   },
 
   reviewTask: async (userId, taskId) => {
     await api.reviewTask(taskId);
-    get().fetchFriends();
+    get().fetchLeaderboardAsNetwork();
     const { currentUser } = get();
     if (currentUser && userId === currentUser.id) {
       const refreshedUser = await api.getMe();
@@ -185,7 +185,7 @@ export const useStore = create<Store>((set, get) => ({
 
   rejectTask: async (userId, taskId) => {
     await api.rejectTask(taskId);
-    get().fetchFriends();
+    get().fetchLeaderboardAsNetwork();
     const { currentUser } = get();
     if (currentUser && userId === currentUser.id) {
       const refreshedUser = await api.getMe();
