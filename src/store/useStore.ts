@@ -133,9 +133,17 @@ export const useStore = create<Store>((set, get) => ({
   fetchFriends: async () => {
     const { currentUser } = get();
     if (!currentUser) return;
-    // Fetch all users (leaderboard) so they appear on the Friends page
-    const friends = await api.getLeaderboard();
-    set({ friends });
+    // NOTE: This fetches the full leaderboard (all users) and stores them
+    // as "friends" so the Friends/Network page shows all platform members.
+    // A true friend-list API endpoint would replace this in a future iteration.
+    try {
+      const friends = await api.getLeaderboard();
+      set({ friends });
+    } catch (err) {
+      // Degrade gracefully — keep the existing friends list rather than
+      // wiping it and leaving the user with an empty, confusing page.
+      console.warn("[LearnLeague] Could not refresh network/leaderboard:", err);
+    }
   },
 
   addFriend: async (friendEmail) => {
