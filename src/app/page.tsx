@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { CheckCircle2, Circle, Flame, ArrowRight, Play, Trophy, Brain, ChevronUp, ChevronDown } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { getMe, getLeaderboard } from "@/lib/api";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 function DashboardTaskItem({ task }: { task: any }) {
   const [expanded, setExpanded] = useState(false);
@@ -140,17 +141,44 @@ export default function DashboardPage() {
         {/* Left Column: Today's Action */}
         <div className="lg:col-span-2 space-y-8">
           
-          <div className="space-y-4">
-            <div className="flex items-end justify-between">
-              <h2 className="text-lg font-medium text-white">Total Experience (XP)</h2>
-              <div className="text-right">
-                <span className="text-2xl font-medium text-[var(--color-accent)]">{liveUser.total_xp || liveUser.totalXp}</span>
-                <span className="text-[var(--color-muted-foreground)] ml-2 text-sm">XP</span>
+          <div className="glass-panel p-6 rounded-xl space-y-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Trophy className="w-24 h-24 text-[var(--color-accent)]" />
+            </div>
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div className="space-y-1">
+                <h2 className="text-sm font-medium text-[var(--color-muted-foreground)] uppercase tracking-wider">Total Experience</h2>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-white">{liveUser.total_xp || liveUser.totalXp}</span>
+                  <span className="text-[var(--color-accent)] font-medium">XP</span>
+                </div>
               </div>
             </div>
             
-            <div className="h-2 w-full bg-[var(--color-border)] rounded-full overflow-hidden">
-              <div className="h-full bg-[var(--color-accent)] rounded-full transition-all duration-1000" style={{ width: `${Math.min(((liveUser.total_xp || liveUser.totalXp) / 5000) * 100, 100)}%` }} />
+            <div className="h-32 w-full relative z-10 -ml-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={[
+                  { name: 'Mon', xp: Math.max(0, (liveUser.total_xp || 0) - 600) },
+                  { name: 'Tue', xp: Math.max(0, (liveUser.total_xp || 0) - 450) },
+                  { name: 'Wed', xp: Math.max(0, (liveUser.total_xp || 0) - 300) },
+                  { name: 'Thu', xp: Math.max(0, (liveUser.total_xp || 0) - 200) },
+                  { name: 'Fri', xp: Math.max(0, (liveUser.total_xp || 0) - 100) },
+                  { name: 'Sat', xp: Math.max(0, (liveUser.total_xp || 0) - 50) },
+                  { name: 'Sun', xp: liveUser.total_xp || 0 },
+                ]}>
+                  <defs>
+                    <linearGradient id="colorXp" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)', borderRadius: '8px' }}
+                    itemStyle={{ color: 'var(--color-accent)' }}
+                  />
+                  <Area type="monotone" dataKey="xp" stroke="var(--color-accent)" strokeWidth={3} fillOpacity={1} fill="url(#colorXp)" />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
 

@@ -168,8 +168,11 @@ export default function WeeklyTestPage() {
       <div className="max-w-3xl mx-auto py-8 space-y-8 animate-in fade-in duration-500">
         
         {/* Header Banner */}
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-8 space-y-6">
-          <div className="flex items-start justify-between">
+        <div className="glass-panel rounded-2xl p-10 space-y-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+            <Brain className="w-64 h-64 text-[var(--color-accent)]" />
+          </div>
+          <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-6">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-xl bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/20 flex items-center justify-center">
                 <Brain className="w-7 h-7 text-[var(--color-accent)]" />
@@ -340,7 +343,10 @@ export default function WeeklyTestPage() {
         </div>
 
         {/* Question Card */}
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-7 space-y-6">
+        <div className="glass-panel rounded-2xl p-8 space-y-6 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-6 opacity-[0.03] pointer-events-none">
+            <Brain className="w-48 h-48 text-[var(--color-accent)]" />
+          </div>
           
           {/* Topic Pill */}
           <div className="flex items-center gap-2">

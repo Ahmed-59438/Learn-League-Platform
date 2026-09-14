@@ -2,6 +2,7 @@
 
 import { useStore } from "@/store/useStore";
 import { Flame, Trophy } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function FriendsPage() {
   const { friends } = useStore();
@@ -29,49 +30,55 @@ export default function FriendsPage() {
             </button>
           </div>
 
-          <div className="space-y-6">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ staggerChildren: 0.1 }}
+            className="space-y-4"
+          >
             {friends.map((friend, i) => (
-              <div key={friend.id} className="group">
-                <div className="flex items-start justify-between py-4 border-b border-[var(--color-border)] group-last:border-0">
+              <motion.div 
+                key={friend.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="group glass-panel rounded-xl overflow-hidden hover:border-[var(--color-accent)] transition-all duration-300"
+              >
+                <div className="flex items-start justify-between p-5">
                   
                   {/* Info */}
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="w-8 h-8 rounded-full bg-[var(--color-surface-hover)] border border-[var(--color-border)] flex items-center justify-center text-xs font-medium text-white relative">
+                      <div className="w-10 h-10 rounded-full bg-[var(--color-surface-hover)] border border-[var(--color-border)] flex items-center justify-center text-sm font-bold text-white relative shadow-sm">
                         {friend.name.charAt(0)}
                         {friend.isOnline && (
-                          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[var(--color-background)]" />
+                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[var(--color-surface)] shadow-sm" />
                         )}
                       </div>
-                      <h3 className="text-lg font-medium text-white">{friend.name}</h3>
-                      <div className="flex items-center gap-1 text-[var(--color-accent)] font-medium text-sm">
+                      <h3 className="text-xl font-bold text-white">{friend.name}</h3>
+                      <div className="flex items-center gap-1 text-orange-500 font-medium text-sm ml-2 bg-orange-500/10 px-2 py-0.5 rounded-full">
                         <Flame className="w-3.5 h-3.5" /> {friend.streak} days
                       </div>
                     </div>
-                    <p className="text-sm text-[var(--color-muted-foreground)] ml-11">
+                    <p className="text-sm text-[var(--color-muted-foreground)] ml-14">
                       {friend.learning_goal}
                     </p>
                   </div>
 
                   {/* Stats Snippet */}
                   <div className="flex items-center gap-8 text-right">
-                    <div>
-                      <div className="text-sm font-medium text-white">{friend.hours_studied_this_week}h 40m</div>
-                      <div className="text-xs text-[var(--color-muted-foreground)]">This week</div>
+                    <div className="hidden sm:block">
+                      <div className="text-lg font-bold text-white">{friend.hours_studied_this_week}h 40m</div>
+                      <div className="text-xs text-[var(--color-muted-foreground)] uppercase tracking-wider">This week</div>
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-white">{friend.weekly_score}</div>
-                      <div className="text-xs text-[var(--color-muted-foreground)]">Score</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-[var(--color-accent)]">#{i + 1}</div>
-                      <div className="text-xs text-[var(--color-muted-foreground)]">Rank</div>
+                      <div className="text-lg font-bold text-[var(--color-accent)]">{friend.weekly_score}</div>
+                      <div className="text-xs text-[var(--color-muted-foreground)] uppercase tracking-wider">Score</div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         {/* Right Col: Activity Feed */}

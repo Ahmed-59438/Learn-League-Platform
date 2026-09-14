@@ -4,17 +4,25 @@ import { useState } from "react";
 import { useStore, type Task } from "@/store/useStore";
 import { CheckCircle2, Circle, CheckSquare, Clock, ChevronDown, ChevronUp } from "lucide-react";
 
+import { motion, AnimatePresence } from "framer-motion";
+
 function TaskItem({ task, onComplete }: { task: Task; onComplete: (id: number) => void }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="flex items-start gap-4 p-5 border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface-hover)] transition-colors group">
+    <motion.div 
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="flex items-start gap-4 p-5 glass-panel rounded-xl hover:border-[var(--color-accent)] transition-all duration-300 group mb-3"
+    >
       <button 
         onClick={() => onComplete(task.id)}
-        className="mt-0.5 shrink-0 focus:outline-none"
+        className="mt-1 shrink-0 focus:outline-none"
         title="Complete task"
       >
-        <Circle className="w-6 h-6 text-[var(--color-muted)] hover:text-[var(--color-success)] transition-colors" />
+        <Circle className="w-6 h-6 text-[var(--color-muted)] group-hover:text-[var(--color-accent)] transition-colors" />
       </button>
       
       <div 
@@ -25,15 +33,15 @@ function TaskItem({ task, onComplete }: { task: Task; onComplete: (id: number) =
           <h3 className={`text-lg font-medium text-white whitespace-pre-wrap ${expanded ? '' : 'line-clamp-1'}`}>
             {task.title}
           </h3>
-          <button className="text-[var(--color-muted)] hover:text-white shrink-0 mt-1">
+          <button className="text-[var(--color-muted)] hover:text-white shrink-0 mt-1 bg-[var(--color-surface)] p-1 rounded-md border border-[var(--color-border)]">
             {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
         </div>
-        <p className="text-sm text-[var(--color-muted-foreground)] mt-2">
+        <p className="text-sm text-[var(--color-muted-foreground)] mt-2 font-mono">
           Assigned: {new Date(task.date_assigned).toLocaleDateString()}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -41,24 +49,38 @@ function CompletedTaskItem({ task }: { task: Task }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="flex items-start gap-4 p-4 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] cursor-pointer hover:bg-[var(--color-surface-hover)] transition-colors" onClick={() => setExpanded(!expanded)}>
-      <CheckCircle2 className="w-5 h-5 text-[var(--color-success)] shrink-0 mt-0.5" />
+    <motion.div 
+      layout
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      className="flex items-start gap-4 p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] cursor-pointer hover:bg-[var(--color-surface-hover)] transition-all duration-500 mb-3" 
+      onClick={() => setExpanded(!expanded)}
+    >
+      <CheckCircle2 className="w-6 h-6 text-[var(--color-success)] shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start gap-4">
-          <h3 className={`text-base text-[var(--color-muted-foreground)] line-through whitespace-pre-wrap ${expanded ? '' : 'line-clamp-1'}`}>
-            {task.title}
-          </h3>
-          <button className="text-[var(--color-muted)] hover:text-white shrink-0 mt-1 opacity-50">
+          <div className="relative inline-block">
+            <h3 className={`text-base text-[var(--color-muted-foreground)] whitespace-pre-wrap ${expanded ? '' : 'line-clamp-1'}`}>
+              {task.title}
+            </h3>
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="absolute top-1/2 left-0 h-0.5 bg-[var(--color-muted-foreground)]/50 -translate-y-1/2"
+            />
+          </div>
+          <button className="text-[var(--color-muted)] hover:text-white shrink-0 mt-1 opacity-50 bg-[var(--color-surface)] p-1 rounded-md border border-[var(--color-border)]">
             {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
         </div>
         {task.status === "reviewed" && (
-          <span className="inline-block mt-2 text-xs font-medium bg-[var(--color-success)]/10 text-[var(--color-success)] px-2 py-1 rounded-sm">
+          <span className="inline-block mt-3 text-xs font-medium bg-[var(--color-success)]/10 text-[var(--color-success)] px-3 py-1 rounded-full border border-[var(--color-success)]/20">
             Reviewed by Admin
           </span>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -101,10 +123,12 @@ export default function DailyTasksPage() {
               <p className="text-[var(--color-muted-foreground)]">No pending tasks for today. Great job!</p>
             </div>
           ) : (
-            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg overflow-hidden">
-              {pendingTasks.map((task) => (
-                <TaskItem key={task.id} task={task} onComplete={completeTask} />
-              ))}
+            <div className="p-1">
+              <AnimatePresence>
+                {pendingTasks.map((task) => (
+                  <TaskItem key={task.id} task={task} onComplete={completeTask} />
+                ))}
+              </AnimatePresence>
             </div>
           )}
         </section>
@@ -117,9 +141,11 @@ export default function DailyTasksPage() {
             </h2>
             
             <div className="space-y-3 opacity-60">
-              {completedTasks.map((task) => (
-                <CompletedTaskItem key={task.id} task={task} />
-              ))}
+              <AnimatePresence>
+                {completedTasks.map((task) => (
+                  <CompletedTaskItem key={task.id} task={task} />
+                ))}
+              </AnimatePresence>
             </div>
           </section>
         )}
