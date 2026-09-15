@@ -56,7 +56,7 @@ export default function WeeklyTestPage() {
         if (data.assigned_topics && data.assigned_topics.length > 0) {
           setAssignedTopics(data.assigned_topics);
         }
-      } catch (err) {
+      } catch {
         // Fallback default topics
         setAssignedTopics([
           "Read Attention Is All You Need paper",

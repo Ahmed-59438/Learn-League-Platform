@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Trophy } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useStore, User } from "@/store/useStore";
+import { useStore } from "@/store/useStore";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -24,8 +24,8 @@ export default function LoginPage() {
     try {
       await login(email, password);
       router.push("/");
-    } catch (err: any) {
-      setError(err.message || "Failed to login");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to login");
     }
   };
 
@@ -74,9 +74,13 @@ export default function LoginPage() {
                 <label htmlFor="password" className="block text-xs font-medium text-[var(--color-muted-foreground)] uppercase tracking-wider">
                   Password
                 </label>
-                <Link href="#" className="text-xs text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors">
+                <button 
+                  type="button" 
+                  onClick={() => setError("Please contact your platform administrator (admin@learnleague.local) to reset your password.")}
+                  className="text-xs text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors focus:outline-none"
+                >
                   Forgot?
-                </Link>
+                </button>
               </div>
               <input 
                 id="password" 
@@ -99,7 +103,7 @@ export default function LoginPage() {
         </form>
 
         <div className="text-center text-sm text-[var(--color-muted-foreground)]">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/auth/signup" className="text-white hover:underline decoration-[var(--color-border)] underline-offset-4">
             Create one
           </Link>

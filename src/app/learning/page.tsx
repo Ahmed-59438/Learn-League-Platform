@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Circle, Clock, Tag, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CheckCircle2, Circle, Clock, Tag } from "lucide-react";
 import { useStore } from "@/store/useStore";
-import { logDailyLearning } from "@/lib/api";
 
 export default function LearningLogPage() {
-  const { currentUser, completeTask } = useStore();
+  const router = useRouter();
+  const { currentUser, logDailyLearning } = useStore();
   const [completedTaskIds, setCompletedTaskIds] = useState<number[]>([]);
   const [reflection, setReflection] = useState("");
   const [hours, setHours] = useState("");
@@ -28,16 +29,19 @@ export default function LearningLogPage() {
     if (!currentUser) return;
     setIsSubmitting(true);
     setSubmitError(null);
-    const totalHours = (parseFloat(hours) || 0) + ((parseFloat(minutes) || 0) / 60);
+
+    const parsedHours = Math.max(0, parseFloat(hours) || 0);
+    const parsedMinutes = Math.max(0, parseFloat(minutes) || 0);
+    const totalHours = parsedHours + (parsedMinutes / 60);
+
+    if (totalHours <= 0) {
+      setSubmitError("Please enter valid study hours or minutes.");
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      // Complete all selected tasks
-      for (const id of completedTaskIds) {
-        await completeTask(id);
-      }
-      
-      // Log learning hours
-      await logDailyLearning(currentUser.id, totalHours, topics, reflection, []);
+      await logDailyLearning(totalHours, topics, reflection, completedTaskIds);
       setSuccess(true);
     } catch (e) {
       setSubmitError((e as Error).message || "Failed to submit. Please try again.");
@@ -55,7 +59,7 @@ export default function LearningLogPage() {
         <h1 className="text-3xl font-medium tracking-tight text-white">Day {currentUser?.streak} Logged!</h1>
         <p className="text-[var(--color-muted-foreground)]">Your XP and streak have been updated.</p>
         <button 
-          onClick={() => window.location.href = "/"}
+          onClick={() => router.push("/")}
           className="bg-white text-black text-sm font-medium px-6 py-2 rounded-md hover:bg-gray-200 transition-colors"
         >
           Return to Dashboard
@@ -68,7 +72,7 @@ export default function LearningLogPage() {
     <div className="max-w-2xl mx-auto space-y-10 animate-in fade-in duration-500 pb-12">
       
       <header className="space-y-2 border-b border-[var(--color-border)] pb-6">
-        <h1 className="text-3xl font-medium tracking-tight text-white">Log Today's Learning</h1>
+        <h1 className="text-3xl font-medium tracking-tight text-white">Log Today&apos;s Learning</h1>
         <p className="text-[var(--color-muted-foreground)]">
           Record your progress for Day {currentUser?.streak}. This defines your weekly score.
         </p>
@@ -86,6 +90,7 @@ export default function LearningLogPage() {
               <div className="relative flex-1">
                 <input 
                   type="number" 
+                  min="0"
                   value={hours}
                   onChange={(e) => setHours(e.target.value)}
                   placeholder="0"
@@ -96,6 +101,8 @@ export default function LearningLogPage() {
               <div className="relative flex-1">
                 <input 
                   type="number" 
+                  min="0"
+                  max="59"
                   value={minutes}
                   onChange={(e) => setMinutes(e.target.value)}
                   placeholder="00"

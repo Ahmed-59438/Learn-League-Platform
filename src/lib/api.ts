@@ -1,4 +1,27 @@
+import type { User, Friend, Task } from "../store/useStore";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
+export const AUTH_EXPIRED_EVENT = "learnleague:auth-expired";
+
+export type AuthResponse = {
+  access_token: string;
+  token_type: string;
+  user: User;
+};
+
+export type AdminTask = Task & {
+  name: string;
+  username: string;
+};
+
+export type EvaluationResult = {
+  is_correct: boolean;
+  score: number;
+  xp_earned: number;
+  feedback: string;
+  explanation: string;
+};
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -17,7 +40,15 @@ function authHeaders(): Record<string, string> {
  * responses so the UI always shows the real reason (e.g. "Email already
  * registered") instead of a hardcoded generic message.
  */
-async function handleResponse<T = any>(res: Response): Promise<T> {
+async function handleResponse<T = unknown>(res: Response): Promise<T> {
+  if (res.status === 401) {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("ll_token");
+      window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+    }
+    throw new Error("Session expired. Please log in again.");
+  }
+
   if (!res.ok) {
     let detail = `Request failed (HTTP ${res.status})`;
     try {
@@ -28,8 +59,8 @@ async function handleResponse<T = any>(res: Response): Promise<T> {
         } else if (Array.isArray(body.detail)) {
           // Handle FastAPI 422 Validation Errors gracefully
           detail = body.detail
-            .map((err: any) => {
-              const field = err.loc ? err.loc[err.loc.length - 1] : "Field";
+            .map((err: { loc?: (string | number)[]; msg: string; type: string }) => {
+              const field = err.loc ? String(err.loc[err.loc.length - 1]) : "Field";
               
               // Custom friendly messages for common fields
               if (err.type === "string_too_short") {
@@ -60,13 +91,13 @@ async function handleResponse<T = any>(res: Response): Promise<T> {
 
 // --- Auth Endpoints ---
 
-export async function login(email: string, password: string) {
+export async function login(email: string, password: string): Promise<AuthResponse> {
   const res = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-  return handleResponse(res); // { access_token, token_type, user }
+  return handleResponse<AuthResponse>(res);
 }
 
 export async function register(userData: {
@@ -75,30 +106,30 @@ export async function register(userData: {
   email: string;
   password: string;
   learning_goal: string;
-}) {
+}): Promise<AuthResponse> {
   const res = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
   });
-  return handleResponse(res);
+  return handleResponse<AuthResponse>(res);
 }
 
-export async function getMe() {
+export async function getMe(): Promise<User> {
   const res = await fetch(`${API_URL}/auth/me`, { headers: authHeaders() });
-  return handleResponse(res);
+  return handleResponse<User>(res);
 }
 
 export async function updateProfile(data: {
   name?: string;
   learning_goal?: string;
-}) {
+}): Promise<User> {
   const res = await fetch(`${API_URL}/auth/me`, {
     method: "PATCH",
     headers: authHeaders(),
     body: JSON.stringify(data),
   });
-  return handleResponse(res);
+  return handleResponse<User>(res);
 }
 
 // --- Tasks Endpoints ---
@@ -106,68 +137,68 @@ export async function updateProfile(data: {
 export async function assignTask(
   userId: number | string,
   taskData: { title: string; assigned_by: string }
-) {
+): Promise<Task> {
   const res = await fetch(`${API_URL}/tasks/${userId}/assign`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(taskData),
   });
-  return handleResponse(res);
+  return handleResponse<Task>(res);
 }
 
-export async function completeTask(taskId: number | string) {
+export async function completeTask(taskId: number | string): Promise<Task> {
   const res = await fetch(`${API_URL}/tasks/${taskId}/complete`, {
     method: "PUT",
     headers: authHeaders(),
   });
-  return handleResponse(res);
+  return handleResponse<Task>(res);
 }
 
-export async function reviewTask(taskId: number | string) {
+export async function reviewTask(taskId: number | string): Promise<Task> {
   const res = await fetch(`${API_URL}/tasks/${taskId}/review`, {
     method: "PUT",
     headers: authHeaders(),
   });
-  return handleResponse(res);
+  return handleResponse<Task>(res);
 }
 
-export async function rejectTask(taskId: number | string) {
+export async function rejectTask(taskId: number | string): Promise<Task> {
   const res = await fetch(`${API_URL}/tasks/${taskId}/reject`, {
     method: "PUT",
     headers: authHeaders(),
   });
-  return handleResponse(res);
+  return handleResponse<Task>(res);
 }
 
 // --- Social Endpoints ---
 
-export async function getLeaderboard() {
+export async function getLeaderboard(): Promise<User[]> {
   const res = await fetch(`${API_URL}/social/leaderboard`, {
     headers: authHeaders(),
   });
-  return handleResponse(res);
+  return handleResponse<User[]>(res);
 }
 
-export async function getFriends(userId: number | string) {
+export async function getFriends(userId: number | string): Promise<Friend[]> {
   const res = await fetch(`${API_URL}/social/friends/${userId}`, {
     headers: authHeaders(),
   });
-  return handleResponse(res);
+  return handleResponse<Friend[]>(res);
 }
 
-export async function addFriend(userId: number | string, friendEmail: string) {
+export async function addFriend(userId: number | string, friendEmail: string): Promise<{ message: string }> {
   const res = await fetch(`${API_URL}/social/friends/${userId}/add`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ friend_email: friendEmail }),
   });
-  return handleResponse(res);
+  return handleResponse<{ message: string }>(res);
 }
 
 export async function removeFriend(
   userId: number | string,
   friendId: number | string
-) {
+): Promise<{ message: string }> {
   const res = await fetch(
     `${API_URL}/social/friends/${userId}/remove/${friendId}`,
     {
@@ -175,7 +206,7 @@ export async function removeFriend(
       headers: authHeaders(),
     }
   );
-  return handleResponse(res);
+  return handleResponse<{ message: string }>(res);
 }
 
 // --- Gamification Endpoints ---
@@ -185,14 +216,15 @@ export async function logDailyLearning(
   hours_studied: number,
   topics: string,
   reflection: string,
-  tasks: { title: string; status: string }[]
-) {
+  tasks: { title: string; status: string }[] = [],
+  task_ids?: number[]
+): Promise<{ message: string; xp_earned?: number }> {
   const res = await fetch(`${API_URL}/learning/${userId}/log`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({ hours_studied, topics, reflection, tasks }),
+    body: JSON.stringify({ hours_studied, topics, reflection, tasks, task_ids }),
   });
-  return handleResponse(res);
+  return handleResponse<{ message: string; xp_earned?: number }>(res);
 }
 
 // --- AI Test Endpoints ---
@@ -245,58 +277,65 @@ export async function evaluateMCQAnswer(
     explanation?: string;
     user_reasoning?: string;
   }
-) {
+): Promise<EvaluationResult> {
   const res = await fetch(`${API_URL}/test/${userId}/evaluate-mcq`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(payload),
   });
-  return handleResponse(res);
+  return handleResponse<EvaluationResult>(res);
 }
 
 export async function evaluateAnswer(
   userId: number | string,
   question: string,
   answer: string
-) {
+): Promise<EvaluationResult> {
   const res = await fetch(`${API_URL}/test/${userId}/evaluate`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ question, answer }),
   });
-  return handleResponse(res);
+  return handleResponse<EvaluationResult>(res);
 }
 
 // --- Winner Endpoint ---
 
-export async function getWeeklyWinner() {
+export type WeeklyWinner = {
+  week_start: string;
+  winner_name: string;
+  total_xp: number;
+  tasks_completed: number;
+};
+
+export async function getWeeklyWinner(): Promise<WeeklyWinner> {
   const res = await fetch(`${API_URL}/winner/current`, {
     headers: authHeaders(),
   });
-  return handleResponse(res);
+  return handleResponse<WeeklyWinner>(res);
 }
 
 // --- Admin Endpoints ---
 
-export async function getAdminUsers() {
+export async function getAdminUsers(): Promise<User[]> {
   const res = await fetch(`${API_URL}/admin/users`, {
     headers: authHeaders(),
   });
-  return handleResponse(res);
+  return handleResponse<User[]>(res);
 }
 
-export async function getAdminTasks() {
+export async function getAdminTasks(): Promise<AdminTask[]> {
   const res = await fetch(`${API_URL}/admin/tasks`, {
     headers: authHeaders(),
   });
-  return handleResponse(res);
+  return handleResponse<AdminTask[]>(res);
 }
 
-export async function updateUserRole(userId: number | string, role: string) {
+export async function updateUserRole(userId: number | string, role: string): Promise<{ message: string }> {
   const res = await fetch(`${API_URL}/admin/users/${userId}/role`, {
     method: "PUT",
     headers: authHeaders(),
     body: JSON.stringify({ role }),
   });
-  return handleResponse(res);
+  return handleResponse<{ message: string }>(res);
 }

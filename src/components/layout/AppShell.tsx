@@ -50,10 +50,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
   
   // Wait for auth check to complete before deciding to show shell or redirect
-  if (isInitializing) return null;
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--color-background)] text-white space-y-4">
+        <div className="w-8 h-8 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-[var(--color-muted-foreground)]">Loading LearnLeague...</p>
+      </div>
+    );
+  }
 
   // Wait for redirect to happen
   if (!currentUser) return null;
+
+  const MOBILE_NAV = [
+    { name: "Home", href: "/", icon: Home },
+    { name: "Tasks", href: "/tasks", icon: CheckSquare },
+    { name: "Learn", href: "/learning", icon: BookOpen },
+    { name: "AI Test", href: "/test", icon: Brain },
+    { name: "Rank", href: "/leaderboard", icon: Trophy },
+    { name: "More", href: "/settings", icon: Settings },
+  ];
 
   return (
     <div className="flex min-h-screen bg-[var(--color-background)]">
@@ -115,26 +131,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-[var(--color-border)] bg-[var(--color-surface)]/90 backdrop-blur-lg z-50">
-        <nav className="flex justify-around items-center h-16 px-2">
-          {[
-            { name: "Home", href: "/", icon: Home },
-            { name: "Learn", href: "/learning", icon: BookOpen },
-            { name: "Friends", href: "/friends", icon: Users },
-            { name: "Rank", href: "/leaderboard", icon: Trophy },
-          ].map((item) => {
+      <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-lg z-50">
+        <nav className="flex justify-around items-center h-16 px-1">
+          {MOBILE_NAV.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link 
                 key={item.href} 
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center justify-center w-full h-full gap-1 transition-colors",
+                  "flex flex-col items-center justify-center w-full h-full gap-1 transition-colors px-1",
                   isActive ? "text-[var(--color-accent)]" : "text-[var(--color-muted-foreground)] hover:text-white"
                 )}
               >
-                <item.icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{item.name}</span>
+                <item.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-[9px] font-medium leading-none">{item.name}</span>
               </Link>
             );
           })}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useStore } from "@/store/useStore";
+import { useStore, User } from "@/store/useStore";
 import { Flame } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getLeaderboard } from "@/lib/api";
@@ -22,17 +22,13 @@ const item = {
 export default function LeaderboardPage() {
   const { currentUser, friends } = useStore();
   const [filter, setFilter] = useState<"Today" | "Week" | "Month">("Week");
+  const [now] = useState(() => Date.now());
   
   // Initialize with cached friends if available to prevent loading flashes
-  const [leaderboardUsers, setLeaderboardUsers] = useState<any[]>(friends || []);
+  const [leaderboardUsers, setLeaderboardUsers] = useState<User[]>(friends || []);
   const [isLoading, setIsLoading] = useState(friends && friends.length > 0 ? false : true);
 
   useEffect(() => {
-    // SWR: Show cached data immediately, then fetch fresh data in background
-    if (friends && friends.length > 0) {
-      setIsLoading(false);
-    }
-
     const fetchBoard = async () => {
       try {
         const users = await getLeaderboard();
@@ -44,7 +40,7 @@ export default function LeaderboardPage() {
       }
     };
     fetchBoard();
-  }, [currentUser, friends]);
+  }, [currentUser]);
 
   if (!currentUser || isLoading) return null;
 
@@ -64,10 +60,10 @@ export default function LeaderboardPage() {
           </div>
           
           <div className="flex bg-[var(--color-surface)] p-1 rounded-md border border-[var(--color-border)]">
-            {["Today", "Week", "Month"].map(f => (
+            {(["Today", "Week", "Month"] as const).map(f => (
               <button
                 key={f}
-                onClick={() => setFilter(f as any)}
+                onClick={() => setFilter(f)}
                 className={`px-4 py-1.5 text-sm font-medium rounded-sm transition-colors ${
                   filter === f 
                     ? "bg-[var(--color-surface-hover)] text-white shadow-sm" 
@@ -89,7 +85,7 @@ export default function LeaderboardPage() {
             const active = isMe
               ? true
               : user.last_seen
-              ? (Date.now() - new Date(user.last_seen).getTime()) < 5 * 60 * 1000
+              ? (now - new Date(user.last_seen).getTime()) < 5 * 60 * 1000
               : false;
               
             const rankStyle = i === 0 
@@ -157,7 +153,7 @@ export default function LeaderboardPage() {
         {userRankIndex > 0 && allUsers[userRankIndex - 1] && (
           <div className="pt-6 border-t border-[var(--color-border)] text-center">
             <p className="text-sm text-[var(--color-muted-foreground)]">
-              You're <span className="text-white font-medium">
+              You&apos;re <span className="text-white font-medium">
                 {((allUsers[userRankIndex - 1].total_xp || allUsers[userRankIndex - 1].weekly_score || 0) - (currentUser.total_xp || currentUser.weekly_score || 0)).toFixed(1)} points
               </span> away from #{userRankIndex}.
             </p>
