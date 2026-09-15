@@ -46,21 +46,21 @@ export default function FriendsPage() {
                 <div className="flex items-start justify-between p-5">
                   
                   {/* Info */}
-                  <div>
+                  <div className="min-w-0 flex-1 pr-4">
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="w-10 h-10 rounded-full bg-[var(--color-surface-hover)] border border-[var(--color-border)] flex items-center justify-center text-sm font-bold text-white relative shadow-sm">
+                      <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--color-surface-hover)] border border-[var(--color-border)] flex items-center justify-center text-sm font-bold text-white relative shadow-sm">
                         {friend.name.charAt(0)}
                         {friend.isOnline && (
                           <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[var(--color-surface)] shadow-sm" />
                         )}
                       </div>
-                      <h3 className="text-xl font-bold text-white">{friend.name}</h3>
-                      <div className="flex items-center gap-1 text-orange-500 font-medium text-sm ml-2 bg-orange-500/10 px-2 py-0.5 rounded-full">
+                      <h3 className="text-xl font-bold text-white truncate">{friend.name}</h3>
+                      <div className="flex items-center gap-1 text-orange-500 font-medium text-xs sm:text-sm shrink-0 ml-1 sm:ml-2 bg-orange-500/10 px-2 py-0.5 rounded-full">
                         <Flame className="w-3.5 h-3.5" /> {friend.streak} days
                       </div>
                     </div>
-                    <p className="text-sm text-[var(--color-muted-foreground)] ml-14">
-                      {friend.learning_goal}
+                    <p className="text-sm text-[var(--color-muted-foreground)] ml-14 truncate block">
+                      {friend.learning_goal || "General"}
                     </p>
                   </div>
 
