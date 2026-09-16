@@ -1,6 +1,6 @@
 import type { User, Friend, Task } from "../store/useStore";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://learn-league-backend.vercel.app";
 
 export const AUTH_EXPIRED_EVENT = "learnleague:auth-expired";
 
