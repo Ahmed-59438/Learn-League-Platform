@@ -112,8 +112,8 @@ export default function LeaderboardPage() {
                   </span>
                 </div>
                 
-                <div className="flex-1 flex items-center gap-6 ml-4">
-                  <div className="w-48">
+                <div className="flex-1 flex items-center gap-2 sm:gap-6 ml-4 min-w-0">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       {/* Green active dot */}
                       {active && (
@@ -122,19 +122,19 @@ export default function LeaderboardPage() {
                           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
                         </span>
                       )}
-                      <span className="text-lg font-medium text-white">{isMe ? "You" : user.name}</span>
+                      <span className="text-lg font-medium text-white truncate">{isMe ? "You" : user.name}</span>
                       {active && (
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 leading-none">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 leading-none shrink-0">
                           Active
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-[var(--color-muted-foreground)]">{user.learning_goal || "General"}</span>
+                    <span className="text-xs text-[var(--color-muted-foreground)] truncate block">{user.learning_goal || "General"}</span>
                   </div>
                   
-                  <div className="w-24 text-right">
-                    <span className="text-xl font-bold text-white block">{user.total_xp || user.weekly_score}</span>
-                    <span className="text-xs text-[var(--color-muted-foreground)] uppercase tracking-wider">Score</span>
+                  <div className="w-16 sm:w-24 text-right shrink-0">
+                    <span className="text-xl font-bold text-white block">{user.total_xp ?? user.weekly_score ?? 0}</span>
+                    <span className="text-[10px] sm:text-xs text-[var(--color-muted-foreground)] uppercase tracking-wider">Score</span>
                   </div>
 
                   <div className="w-24 text-right hidden md:block">
@@ -154,7 +154,7 @@ export default function LeaderboardPage() {
           <div className="pt-6 border-t border-[var(--color-border)] text-center">
             <p className="text-sm text-[var(--color-muted-foreground)]">
               You&apos;re <span className="text-white font-medium">
-                {((allUsers[userRankIndex - 1].total_xp || allUsers[userRankIndex - 1].weekly_score || 0) - (currentUser.total_xp || currentUser.weekly_score || 0)).toFixed(1)} points
+                {((allUsers[userRankIndex - 1].total_xp ?? allUsers[userRankIndex - 1].weekly_score ?? 0) - (currentUser.total_xp ?? currentUser.weekly_score ?? 0)).toFixed(1)} points
               </span> away from #{userRankIndex}.
             </p>
           </div>

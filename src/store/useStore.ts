@@ -29,6 +29,7 @@ export type User = {
   streak: number;
   longest_streak: number;
   total_xp: number;
+  totalXp?: number;
   learning_goal: string;
   weekly_score?: number;
   hours_studied_this_week?: number;

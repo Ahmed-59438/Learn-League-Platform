@@ -155,14 +155,16 @@ export default function DashboardPage() {
     <div className="space-y-12 animate-in fade-in duration-700">
       
       {/* Header Context */}
-      <header className="space-y-1">
-        <h1 className="text-3xl font-medium tracking-tight text-white">
+      <header className="space-y-2">
+        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white">
           {format(today, "EEEE, MMMM d")}
         </h1>
-        <p className="text-[var(--color-muted-foreground)] flex items-center gap-2">
-          Your <span className="font-medium text-white">{liveUser.streak}th</span> consecutive day.
-          <Flame className="w-4 h-4 text-[var(--color-accent)]" />
-        </p>
+        <div className="flex items-center gap-2 text-[var(--color-muted-foreground)]">
+          <p className="flex items-center gap-2">
+            Your <span className="font-semibold text-white bg-[var(--color-surface-hover)] px-2 py-0.5 rounded-md">{liveUser.streak}</span> consecutive day{liveUser.streak !== 1 ? 's' : ''}.
+          </p>
+          <Flame className="w-5 h-5 text-[var(--color-accent)] animate-pulse" />
+        </div>
       </header>
 
       {/* Today's Workspace */}
@@ -171,16 +173,16 @@ export default function DashboardPage() {
         {/* Left Column: Today's Action */}
         <div className="lg:col-span-2 space-y-8">
           
-          <div className="glass-panel p-6 rounded-xl space-y-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Trophy className="w-24 h-24 text-[var(--color-accent)]" />
+          <div className="glass-panel p-6 rounded-xl space-y-6 relative overflow-hidden bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-background)] border border-[var(--color-border)] shadow-lg">
+            <div className="absolute top-0 right-0 p-4 opacity-5">
+              <Trophy className="w-32 h-32 text-[var(--color-accent)]" />
             </div>
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div className="space-y-1">
-                <h2 className="text-sm font-medium text-[var(--color-muted-foreground)] uppercase tracking-wider">Total Experience</h2>
+                <h2 className="text-sm font-semibold text-[var(--color-muted-foreground)] uppercase tracking-widest">Total Experience</h2>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-white">{liveUser.total_xp || 0}</span>
-                  <span className="text-[var(--color-accent)] font-medium">XP</span>
+                  <span className="text-5xl font-bold text-white tracking-tight">{liveUser.total_xp ?? liveUser.totalXp ?? 0}</span>
+                  <span className="text-xl text-[var(--color-accent)] font-semibold">XP</span>
                 </div>
               </div>
             </div>
@@ -336,12 +338,12 @@ export default function DashboardPage() {
               })}
               
               <div className="flex items-center justify-between p-2 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] mt-2 cursor-pointer hover:bg-[var(--color-surface-hover)] transition-colors" onClick={() => router.push('/leaderboard')}>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-medium text-[var(--color-accent)] w-4">--</span>
-                  <span className="text-sm font-medium text-white">You</span>
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-xs font-medium text-[var(--color-accent)] w-4 shrink-0">--</span>
+                  <span className="text-sm font-medium text-white truncate">You</span>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium text-[var(--color-accent)]">{liveUser.total_xp || 0} XP</div>
+                <div className="text-right shrink-0">
+                  <div className="text-sm font-medium text-[var(--color-accent)]">{liveUser.total_xp ?? liveUser.totalXp ?? 0} XP</div>
                 </div>
               </div>
             </div>
